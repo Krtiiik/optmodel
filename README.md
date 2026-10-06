@@ -1,12 +1,20 @@
 # optmodel
 
-A LaTeX package for typesetting mathematical optimization models: a keyword
-(`\min`, `s.t.`), constraints aligned in columns (left-hand side, relation,
-right-hand side, quantifier), optional per-line numbers or tags, and an optional
-tag for the whole model. The block is centred or indented as a unit and always
-fits the line width.
+A LaTeX package for typesetting optimization models (MIP, LP, CP). Such a model features
+
+* objective - min/max of some expression,
+* constraints - aligned in columns (left-hand side, relation, right-hand side, quantifiers),
+* optional per-line numbers or tags,
+* and an optional tag for the whole model.
+
+The model block can be centered or indented as a unit and always fits the line width.
 
 Version 1.0 (2026/10/06) · Licence: [LPPL 1.3c](LICENSE) · Maintainer: Krtiiik
+
+> **AI disclosure:** the original style file was written by the maintainer. Renaming and
+> prefixing, bug fixes, the manual, this README and the packaging were done with AI
+> assistance (Claude, by Anthropic). Design decisions and maintenance remain with the
+> maintainer.
 
 ## Installation
 
