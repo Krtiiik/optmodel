@@ -1,0 +1,280 @@
+%% optmodel-doc.tex -- manual for the optmodel package
+%% Copyright 2026 Krtiiik
+%% Distributed under the LaTeX Project Public License, version 1.3c or later.
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage{optmodel}
+\usepackage{booktabs}
+\usepackage{array}
+
+\newcommand\cs[1]{\texttt{\textbackslash #1}}
+\newcommand\pkg[1]{\textsf{#1}}
+\makeatletter
+\def\verbatim@font{\normalfont\ttfamily\footnotesize}
+\makeatother
+\setlength\parindent{0pt}
+\setlength\parskip{0.6\baselineskip}
+
+\title{The \pkg{optmodel} package\\[2pt]\large typesetting optimization models}
+\author{Krtiiik}
+\date{Version 1.0 \quad 2026/10/06}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+\pkg{optmodel} provides one environment, \texttt{optmodel}, that lays out a
+mathematical optimization model: a keyword (\verb|\min|, \verb|s.t.|), the
+left-hand sides, relations and right-hand sides of the constraints aligned in
+columns, an optional quantifier column (\verb|\forall t|), optional per-line
+numbers or tags, and an optional tag for the whole model.
+The block is centred (or indented) as a unit and never exceeds the line width.
+
+All public names carry the prefix \texttt{opt}, so the package is safe to load
+next to other packages.
+It needs a \LaTeX{} kernel from 2020-10-01 or later and loads \pkg{amsmath},
+\pkg{mathtools} and \pkg{array}.
+
+\section{Syntax}
+
+\begin{verbatim}
+\usepackage{optmodel}
+...
+\begin{optmodel}[<model tag>][<label key>]
+  <keyword> & <lhs> & <rel> & <rhs> & <quantifier> & <line tag> \\
+  ...
+\end{optmodel}
+\end{verbatim}
+
+Every row has up to six columns, separated by \verb|&|:
+(1)~keyword, (2)~left-hand side (right-aligned), (3)~relation, (4)~right-hand
+side, (5)~quantifier, (6)~line number or tag (right-aligned at the margin).
+Columns 2--5 are in display math mode; column~1 is too, so use \verb|\text{s.t.}|
+for words.
+Missing trailing cells may be omitted.
+Rows are separated by \verb|\\|; the space between rows is \cs{optrowsep} unless
+you give the usual optional argument, \verb|\\[2pt]|.
+
+Both optional arguments of the environment are optional:
+
+\begin{center}\small
+\begin{tabular}{@{}>{\ttfamily}l >{\raggedright\arraybackslash}p{0.5\textwidth}@{}}
+\toprule
+\textnormal{Call} & \textnormal{Effect}\\
+\midrule
+\verb|\begin{optmodel}|          & no model tag\\
+\verb|\begin{optmodel}[PP2]|     & model tag \textnormal{(PP2)} at the right margin\\
+\verb|\begin{optmodel}[]|        & auto-numbered model tag, uses the \texttt{equation} counter\\
+\verb|\begin{optmodel}[..][key]| & additionally \cs{label}\texttt{\{key\}}, so \cs{ref}\texttt{\{key\}} yields the tag\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Modes}
+
+All examples use the same small model unless noted.
+
+\subsection{No label}
+
+\begin{verbatim}
+\begin{optmodel}
+  \min        & \optobjective{c^{\top} x} \\
+  \text{s.t.} & A x & \le & b \\
+              & x   & \ge & 0
+\end{optmodel}
+\end{verbatim}
+\begin{optmodel}
+  \min        & \optobjective{c^{\top} x} \\
+  \text{s.t.} & A x & \le & b \\
+              & x   & \ge & 0
+\end{optmodel}
+
+\subsection{Custom label}
+
+\begin{verbatim}
+\begin{optmodel}[LP]
+  ...
+\end{optmodel}
+\end{verbatim}
+\begin{optmodel}[LP]
+  \min        & \optobjective{c^{\top} x} \\
+  \text{s.t.} & A x & \le & b \\
+              & x   & \ge & 0
+\end{optmodel}
+
+\subsection{Automatic label and a label key}
+
+An empty first argument takes the next equation number; the second argument is
+a \cs{label} key.
+
+\begin{verbatim}
+\begin{optmodel}[][m:lp]
+  ...
+\end{optmodel}
+Model~\ref{m:lp} is a linear program.
+\end{verbatim}
+\begin{optmodel}[][m:lp]
+  \min        & \optobjective{c^{\top} x} \\
+  \text{s.t.} & A x & \le & b \\
+              & x   & \ge & 0
+\end{optmodel}
+Model~\ref{m:lp} is a linear program.
+
+\subsection{Per-line numbers: \cs{optnum}}
+
+Put \cs{optnum} in column~6 to number a line with the next equation number.
+Labels work as usual.
+
+\begin{verbatim}
+\begin{optmodel}
+  \min        & \optobjective{c^{\top} x} \\
+  \text{s.t.} & A x & \le & b & & \optnum\label{c:cap} \\
+              & x   & \ge & 0 & & \optnum
+\end{optmodel}
+Constraint~\ref{c:cap} is the capacity constraint.
+\end{verbatim}
+\begin{optmodel}
+  \min        & \optobjective{c^{\top} x} \\
+  \text{s.t.} & A x & \le & b & & \optnum\label{c:cap} \\
+              & x   & \ge & 0 & & \optnum
+\end{optmodel}
+Constraint~\ref{c:cap} is the capacity constraint.
+
+\subsection{Per-line tags: \cs{opttag}, with a model tag}
+
+\cs{opttag}\verb|{<text>}| prints a fixed tag; \cs{label} then refers to that
+text.
+A row consisting of a single \cs{optwholerow} spans columns 2--4 and is left
+aligned; it is meant for domains.
+
+\begin{verbatim}
+\begin{optmodel}[PP2][m:pp2]
+  \min        & \optobjective{\sum_t c_t x_t} \\
+  \text{s.t.} & \sum_t A^{\mathrm{I}}_t x_t & \le & b^{\mathrm{I}}
+    & & \opttag{I}\label{c:I} \\
+  & A^{\mathrm{II}}_t x_t + B_t y_t & \le & b^{\mathrm{II}}_t,
+    & \forall t & \opttag{II}\label{c:II} \\
+  & \optwholerow{x_t \in \mathbf{X}_t,\ y_t \in \mathbf{Y}_t} & &
+\end{optmodel}
+Model~\ref{m:pp2} has linking constraints~\ref{c:I} and~\ref{c:II}.
+\end{verbatim}
+\begin{optmodel}[PP2][m:pp2]
+  \min        & \optobjective{\sum_t c_t x_t} \\
+  \text{s.t.} & \sum_t A^{\mathrm{I}}_t x_t & \le & b^{\mathrm{I}}
+    & & \opttag{I}\label{c:I} \\
+  & A^{\mathrm{II}}_t x_t + B_t y_t & \le & b^{\mathrm{II}}_t,
+    & \forall t & \opttag{II}\label{c:II} \\
+  & \optwholerow{x_t \in \mathbf{X}_t,\ y_t \in \mathbf{Y}_t} & &
+\end{optmodel}
+Model~\ref{m:pp2} has linking constraints~\ref{c:I} and~\ref{c:II}.
+
+\subsection{Centred versus indented}
+
+By default the block is centred in the line (switch \cs{optcentertrue}).
+After \cs{optcenterfalse} it is instead indented by \cs{optindent} from the left
+margin.
+The indent is reduced when the model would otherwise run into the tags.
+Both switches and lengths are ordinary \TeX{} assignments, so keep them in a group.
+
+\begin{verbatim}
+\begingroup
+  \optcenterfalse \setlength\optindent{3em}
+  \begin{optmodel}[LP] ... \end{optmodel}
+\endgroup
+\end{verbatim}
+\begingroup
+  \optcenterfalse \setlength\optindent{3em}
+  \begin{optmodel}[LP]
+    \min        & \optobjective{c^{\top} x} \\
+    \text{s.t.} & A x & \le & b \\
+                & x   & \ge & 0
+  \end{optmodel}
+\endgroup
+
+\subsection{Long objective}
+
+\cs{optobjective} spans columns 2--4 but adds nothing to their widths: the
+constraints alone determine the layout, and a long objective starts at the
+left edge of the left-hand-side column and simply extends to the right of the
+constraints.
+The line numbers below belong to the constraints only.
+
+\begin{verbatim}
+\begin{optmodel}
+  \min        & \optobjective{\sum_{t=1}^{T}\sum_{k=1}^{K}
+    \bigl(c_{tk}x_{tk}+f_{tk}y_{tk}+h_{tk}s_{tk}\bigr)
+    + \sum_{t=1}^{T} p_t u_t} \\
+  \text{s.t.} & s_{t-1,k}+x_{tk}-s_{tk} & = & d_{tk},
+    & \forall t,k & \optnum \\
+  & x_{tk} & \le & M y_{tk}, & \forall t,k & \optnum
+\end{optmodel}
+\end{verbatim}
+\begin{optmodel}
+  \min        & \optobjective{\sum_{t=1}^{T}\sum_{k=1}^{K}
+    \bigl(c_{tk}x_{tk}+f_{tk}y_{tk}+h_{tk}s_{tk}\bigr)
+    + \sum_{t=1}^{T} p_t u_t} \\
+  \text{s.t.} & s_{t-1,k}+x_{tk}-s_{tk} & = & d_{tk},
+    & \forall t,k & \optnum \\
+  & x_{tk} & \le & M y_{tk}, & \forall t,k & \optnum
+\end{optmodel}
+
+\section{Parameters}
+
+The spacing parameters are ordinary lengths and the centring is a switch.
+They may be changed at any point and apply to the models that follow in the
+same group.
+
+\begin{center}\small
+\begin{tabular}{@{}>{\ttfamily\textbackslash}l l >{\raggedright\arraybackslash}p{0.4\textwidth}@{}}
+\toprule
+\multicolumn{1}{@{}l}{Name} & Default & Meaning\\
+\midrule
+optkeysep   & 1em   & gap between keyword and left-hand side\\
+optquantsep & 1em   & gap between right-hand side and quantifier\\
+optnumsep   & 2em   & minimum gap before the line numbers\\
+opttagsep   & 1.5em & gap between line numbers and the model tag\\
+optrowsep   & 4pt   & extra space between rows\\
+optindent   & 2em   & left indent when \cs{optcenterfalse} is in effect\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}\small
+\begin{tabular}{@{}>{\ttfamily\textbackslash}l >{\raggedright\arraybackslash}p{0.6\textwidth}@{}}
+\toprule
+\multicolumn{1}{@{}l}{Command} & Meaning\\
+\midrule
+optobjective\{..\} & objective row, starts at the left-hand-side column, adds no width\\
+optwholerow\{..\}  & free row across columns 2--4, left aligned, adds width\\
+optnum             & auto-numbered line tag (column 6)\\
+opttag\{..\}       & fixed-text line tag (column 6)\\
+optcentertrue      & centre the block (default)\\
+optcenterfalse     & indent the block by \cs{optindent}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Limitations}
+
+\begin{itemize}
+\item The body is read as an argument and typeset twice (once to measure it).
+  Verbatim material (\cs{verb}, \texttt{listings}) is not allowed inside, and
+  commands with side effects other than \cs{label}, \cs{optnum} and \cs{opttag}
+  run twice.
+\item A model is a single unbreakable block; it will not be split across pages.
+\item An objective is not line-broken. One that is wider than the space to the
+  right of its column runs past the margin or into the model tag, and \TeX{}
+  does \emph{not} report this as an overfull box. Check long objectives by eye
+  and split them by hand.
+\item The layout has the fixed six columns described above.
+\item With \pkg{hyperref} the package compiles cleanly and \cs{ref} prints the
+  right text, but a \cs{label} after \cs{opttag} links to the enclosing
+  section, not to the line. Model tags and \cs{optnum} lines link correctly.
+\item The environment builds on \texttt{equation*}; do not nest it in other
+  display environments.
+\end{itemize}
+
+\end{document}

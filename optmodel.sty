@@ -1,0 +1,104 @@
+%% optmodel.sty
+%% Copyright 2026 Krtiiik
+%
+% This work may be distributed and/or modified under the
+% conditions of the LaTeX Project Public License, either version 1.3c
+% of this license or (at your option) any later version.
+% The latest version of this license is in
+%   http://www.latex-project.org/lppl.txt
+% and version 1.3c or later is part of all distributions of LaTeX
+% version 2008/05/04 or later.
+%
+% This work has the LPPL maintenance status `maintained'.
+%
+% The Current Maintainer of this work is Krtiiik.
+%
+% This work consists of the files optmodel.sty, optmodel-doc.tex,
+% optmodel-doc.pdf and README.md.
+
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{optmodel}[2026/10/06 v1.0 optimization model layout]
+\RequirePackage{amsmath,mathtools,array}
+
+% ---- user-adjustable -------------------------------------------------------
+\newlength\optkeysep   \setlength\optkeysep{1em}    % keyword  | lhs
+\newlength\optquantsep \setlength\optquantsep{1em}  % rhs      | quantifier
+\newlength\optnumsep   \setlength\optnumsep{2em}    % min gap before line numbers
+\newlength\opttagsep   \setlength\opttagsep{1.5em}  % line numbers | model tag
+\newlength\optrowsep   \setlength\optrowsep{4pt}    % extra space between rows
+\newlength\optindent   \setlength\optindent{2em}    % used with \optcenterfalse
+\newif\ifoptcenter     \optcentertrue               % centre the model body
+
+% ---- row macros ------------------------------------------------------------
+% objective: starts at the lhs column, takes no width (never widens columns)
+\newcommand\optobjective[1]{\multicolumn{3}{>{$\displaystyle}l<{$}@{\hspace{\optquantsep}}}{\mathrlap{#1}}}
+% free row spanning lhs..rhs, left aligned (e.g. domains), does take width
+\newcommand\optwholerow[1]{\multicolumn{3}{>{$\displaystyle}l<{$}@{\hspace{\optquantsep}}}{#1}}
+% line numbers (last column)
+\newcommand\optnum{\refstepcounter{equation}\tagform@{\theequation}}
+\newcommand\opttag[1]{\def\@currentlabel{#1}\tagform@{#1}}
+
+% ---- internals ---------------------------------------------------------------
+\newlength\optmodel@A \newlength\optmodel@P \newlength\optmodel@W \newlength\optmodel@T
+\newlength\optmodel@N % widest line number/tag, found in pass 1
+\newsavebox\optmodel@box
+% pass 1: record the width of a line tag instead of typesetting it
+\def\optmodel@note#1{%
+  \settowidth\optmodel@T{\tagform@{#1}}%
+  \ifdim\optmodel@T>\optmodel@N \global\optmodel@N\optmodel@T\fi}
+\def\optmodel@xarraycr{\@ifnextchar[\@argarraycr{\@argarraycr[\optrowsep]}}
+
+% \begin{optmodel}            no model label
+% \begin{optmodel}[PP2]       model label (PP2)
+% \begin{optmodel}[]          auto-numbered model label
+% optional 2nd arg = \label key of the model
+\NewDocumentEnvironment{optmodel}{o o +b}{%
+  \let\@xarraycr\optmodel@xarraycr
+  % pass 1: natural width of the body (line numbers measured, not set)
+  \begingroup
+    \global\optmodel@N\z@
+    \let\label\@gobble
+    \def\optnum{\begingroup\advance\c@equation\@ne
+      \optmodel@note{\theequation}\endgroup}%
+    \def\opttag##1{\optmodel@note{##1}}%
+    \setbox\optmodel@box\hbox{%
+      \begin{tabular}{@{}>{$\displaystyle}l<{$}%
+        @{\hspace{\optkeysep}}>{$\displaystyle}r<{$}%
+        @{}>{${}}c<{{}$}@{}>{$\displaystyle}l<{$}%
+        @{\hspace{\optquantsep}}>{$\displaystyle}l<{$}@{}r@{}}#3\end{tabular}}%
+    \global\optmodel@W=\wd\optmodel@box
+  \endgroup
+  % available width and model tag
+  \setlength\optmodel@A{\linewidth}%
+  \IfValueT{#1}{%
+    \IfBlankTF{#1}{\refstepcounter{equation}\edef\optmodel@tag{\theequation}}%
+                  {\def\optmodel@tag{#1}}%
+    \settowidth\optmodel@T{\normalfont(\optmodel@tag)}%
+    \addtolength\optmodel@A{-\optmodel@T}\addtolength\optmodel@A{-\opttagsep}}%
+  % left padding
+  \ifoptcenter
+    \setlength\optmodel@P{\dimexpr(\linewidth-\optmodel@W)/2\relax}%
+  \else
+    \setlength\optmodel@P{\optindent}%
+  \fi
+  \ifdim\optmodel@P>\dimexpr\optmodel@A-\optmodel@W-\optnumsep-\optmodel@N\relax
+    \setlength\optmodel@P{\dimexpr\optmodel@A-\optmodel@W-\optnumsep-\optmodel@N\relax}\fi
+  \ifdim\optmodel@P<\z@ \setlength\optmodel@P{\z@}\fi
+  % pass 2
+  \begin{equation*}
+    \IfValueT{#1}{\tag{\optmodel@tag}}\IfValueT{#2}{\label{#2}}%
+    \let\label\ltx@label
+    % without a line-number cell there is no stretchable glue to fill the
+    % width; that is harmless, so do not report it
+    \hbadness=\@M
+    \begin{tabular*}{\optmodel@A}{@{\hspace{\optmodel@P}}>{$\displaystyle}l<{$}% 1 keyword
+      @{\hspace{\optkeysep}}>{$\displaystyle}r<{$}%                     2 lhs
+      @{}>{${}}c<{{}$}@{}%                                                3 relation
+      >{$\displaystyle}l<{$}%                                             4 rhs
+      @{\hspace{\optquantsep}}>{$\displaystyle}l<{$}%                   5 quantifier
+      @{\extracolsep{\fill}\hspace{\optnumsep}}r@{}}%                   6 line no.
+      #3%
+    \end{tabular*}%
+  \end{equation*}%
+}{\ignorespacesafterend}
+\endinput

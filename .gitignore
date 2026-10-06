@@ -1,0 +1,49 @@
+## LaTeX build artefacts
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.idx
+*.ilg
+*.ind
+*.glo
+*.gls
+*.glg
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.dvi
+*.ps
+*.thm
+*.tdo
+*-blx.bib
+*.xwm
+*.pyg
+_minted*/
+latex.out/
+
+## Release builds (attached to GitHub releases, not tracked)
+dist/
+*.zip
+*.tar.gz
+
+## Editors / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# optmodel-doc.pdf is deliberately NOT ignored: it ships with the package.
