@@ -9,7 +9,7 @@ A LaTeX package for typesetting optimization models (MIP, LP, CP). Such a model 
 
 The model block can be centered or indented as a unit and always fits the line width.
 
-Version 1.0 (2026/10/06) · Licence: [LPPL 1.3c](LICENSE) · Maintainer: Krtiiik
+Version 1.1 (2026/10/06) · Licence: [LPPL 1.3c](LICENSE) · Maintainer: Krtiiik
 
 > **AI disclosure:** the original style file was written by the maintainer. Renaming and
 > prefixing, bug fixes, the manual, this README and the packaging were done with AI
